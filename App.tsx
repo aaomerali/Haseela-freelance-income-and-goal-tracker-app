@@ -8,8 +8,11 @@ import Reports from './components/Reports';
 import GoalModal from './components/GoalModal';
 import ClientDetailModal from './components/ClientDetailModal';
 
+// دالة توليد معرفات آمنة ولا تستخدم eval
+const generateId = () => Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+
 const App: React.FC = () => {
-  const STORAGE_KEY = 'freelance_pro_data_v3';
+  const STORAGE_KEY = 'haseela_app_data_v1';
 
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -17,7 +20,7 @@ const App: React.FC = () => {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error("Failed to parse storage", e);
+        console.error("Storage parse failed", e);
       }
     }
     return {
@@ -32,15 +35,14 @@ const App: React.FC = () => {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
-    setTimeout(() => setIsLoaded(true), 1200);
+    const timer = setTimeout(() => setIsLoaded(true), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    setLastSaved(new Date());
   }, [state]);
 
   const currentMonth = new Date().getMonth() + 1;
@@ -59,7 +61,7 @@ const App: React.FC = () => {
   const addClient = useCallback((name: string) => {
     const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500'];
     const newClient: Client = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name,
       tasks: [],
       color: colors[Math.floor(Math.random() * colors.length)]
@@ -68,13 +70,15 @@ const App: React.FC = () => {
   }, []);
 
   const deleteClient = useCallback((clientId: string) => {
-    setState(prev => ({ ...prev, clients: prev.clients.filter(c => c.id !== clientId) }));
+    if(confirm('هل تريد حذف هذا العميل وجميع مهامه؟')) {
+      setState(prev => ({ ...prev, clients: prev.clients.filter(c => c.id !== clientId) }));
+    }
   }, []);
 
   const addTask = useCallback((clientId: string, task: Omit<Task, 'id' | 'createdAt' | 'isCompleted'>) => {
     const newTask: Task = {
       ...task,
-      id: crypto.randomUUID(),
+      id: generateId(),
       isCompleted: false,
       createdAt: new Date().toISOString()
     };
@@ -118,74 +122,63 @@ const App: React.FC = () => {
   }, [currentMonth, currentYear]);
 
   const exportData = () => {
-    const dataStr = JSON.stringify(state, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `haseela_backup_${new Date().toISOString().split('T')[0]}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    const dataStr = JSON.stringify(state);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `haseela_backup.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    fileReader.onload = (e) => {
-      const content = e.target?.result;
-      if (typeof content === 'string') {
-        try {
-          const importedState = JSON.parse(content);
-          if (importedState.clients && importedState.goals) {
-            if (confirm('هل أنت متأكد؟ سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة.')) {
-              setState(importedState);
-              setShowSettings(false);
-            }
-          } else {
-            alert('ملف غير صالح.');
-          }
-        } catch (err) {
-          alert('خطأ في قراءة الملف.');
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (data.clients) {
+          setState(data);
+          alert('تم استيراد البيانات بنجاح');
         }
+      } catch {
+        alert('الملف غير صالح');
       }
     };
-    fileReader.readAsText(files[0]);
+    reader.readAsText(file);
   };
 
   const selectedClient = state.clients.find(c => c.id === selectedClientId);
 
   if (!isLoaded) {
     return (
-      <div className="fixed inset-0 bg-indigo-600 flex flex-col items-center justify-center text-white p-6 text-center">
-        <div className="w-24 h-24 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mb-6 animate-bounce">
-           <i className="fas fa-coins text-5xl"></i>
+      <div className="fixed inset-0 bg-indigo-600 flex flex-col items-center justify-center text-white">
+        <div className="w-20 h-20 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mb-4 animate-bounce">
+           <i className="fas fa-coins text-4xl"></i>
         </div>
-        <h1 className="text-4xl font-bold mb-2">حصيلة</h1>
-        <p className="text-indigo-200 text-sm font-bold mb-8">يتم تحميل بياناتك...</p>
+        <h1 className="text-3xl font-bold">حصيلة</h1>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 safe-top safe-bottom">
-      <header className="sticky top-0 z-30 bg-gray-50 bg-opacity-80 backdrop-filter backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <header className="sticky top-0 z-30 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg px-6 py-4 flex justify-between items-center border-b border-gray-100 safe-top">
         <div className="flex items-center space-x-2 space-x-reverse">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs">
-            <i className="fas fa-coins"></i>
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+            <i className="fas fa-coins text-xs"></i>
           </div>
-          <span className="font-extrabold text-gray-800 text-xl">حصيلة</span>
+          <span className="font-bold text-gray-800 text-lg">حصيلة</span>
         </div>
-        <button 
-          onClick={() => setShowSettings(true)}
-          className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-50 flex items-center justify-center text-gray-400 btn-active"
-        >
+        <button onClick={() => setShowSettings(true)} className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 btn-active">
           <i className="fas fa-cog"></i>
         </button>
       </header>
 
       <main className="flex-1 pb-32">
-        <div className="max-w-md mx-auto px-5 pt-6">
+        <div className="max-w-md mx-auto px-5 pt-6 animate-fade-in">
           {activeTab === 'dashboard' && <Dashboard state={state} onClientClick={setSelectedClientId} onSetGoalClick={() => setShowGoalModal(true)} />}
           {activeTab === 'clients' && <ClientList clients={state.clients} onAddClient={addClient} onClientClick={setSelectedClientId} onDeleteClient={deleteClient} />}
           {activeTab === 'history' && <History state={state} />}
@@ -206,27 +199,22 @@ const App: React.FC = () => {
       </nav>
 
       {showSettings && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-8 shadow-2xl">
-             <div className="flex justify-between items-start mb-8">
-                <button onClick={() => setShowSettings(false)} className="text-gray-400 p-2"><i className="fas fa-times"></i></button>
-                <h2 className="text-xl font-bold text-gray-800">إدارة البيانات</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-8 animate-fade-in">
+             <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl font-bold">الإعدادات</h2>
+                <button onClick={() => setShowSettings(false)} className="text-gray-400"><i className="fas fa-times"></i></button>
              </div>
-             <div className="space-y-6">
-                <button onClick={exportData} className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl btn-active">
-                    <div className="flex items-center space-x-3 space-x-reverse">
-                        <i className="fas fa-download text-indigo-500"></i>
-                        <span className="text-sm font-bold text-gray-700">تصدير النسخة الاحتياطية</span>
-                    </div>
+             <div className="space-y-4">
+                <button onClick={exportData} className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl btn-active">
+                   <span className="font-bold">تصدير البيانات</span>
+                   <i className="fas fa-download text-indigo-500"></i>
                 </button>
-                <label className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl btn-active cursor-pointer">
-                    <div className="flex items-center space-x-3 space-x-reverse">
-                        <i className="fas fa-upload text-yellow-500"></i>
-                        <span className="text-sm font-bold text-gray-700">استيراد بيانات</span>
-                    </div>
-                    <input type="file" accept=".json" onChange={importData} className="hidden" />
+                <label className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl btn-active cursor-pointer">
+                   <span className="font-bold">استيراد البيانات</span>
+                   <i className="fas fa-upload text-green-500"></i>
+                   <input type="file" onChange={importData} className="hidden" />
                 </label>
-                <button onClick={() => { if(confirm('حذف كل البيانات؟')) { localStorage.clear(); window.location.reload(); } }} className="w-full py-4 text-red-500 text-sm font-bold">مسح شامل</button>
              </div>
           </div>
         </div>
@@ -239,7 +227,7 @@ const App: React.FC = () => {
 };
 
 const TabButton: React.FC<{ active: boolean, onClick: () => void, icon: string, label: string }> = ({ active, onClick, icon, label }) => (
-  <button onClick={onClick} className={`flex flex-col items-center space-y-1 transition-all btn-active ${active ? 'text-indigo-600' : 'text-gray-400'}`}>
+  <button onClick={onClick} className={`flex flex-col items-center space-y-1 transition-all ${active ? 'text-indigo-600' : 'text-gray-400'}`}>
     <i className={`fas ${icon} text-lg`}></i>
     <span className="text-[10px] font-bold">{label}</span>
   </button>

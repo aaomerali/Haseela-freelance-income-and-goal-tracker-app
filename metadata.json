@@ -1,0 +1,12 @@
+{
+  "name": "حصيلة",
+  "short_name": "حصيلة",
+  "description": "تطبيقك الشخصي لإدارة الأرباح وتتبع عوائد العمل الحر بكل سهولة.",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc",
+  "display": "standalone",
+  "orientation": "portrait",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

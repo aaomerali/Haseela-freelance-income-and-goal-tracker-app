@@ -38,7 +38,6 @@ const App: React.FC = () => {
     setTimeout(() => setIsLoaded(true), 1200);
   }, []);
 
-  // Auto-save effect
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setLastSaved(new Date());
@@ -58,11 +57,12 @@ const App: React.FC = () => {
   }, [currentGoal, isLoaded, activeTab]);
 
   const addClient = useCallback((name: string) => {
+    const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500'];
     const newClient: Client = {
       id: crypto.randomUUID(),
       name,
       tasks: [],
-      color: `bg-${['indigo', 'violet', 'emerald', 'amber', 'rose', 'cyan'][Math.floor(Math.random() * 6)]}-500`
+      color: colors[Math.floor(Math.random() * colors.length)]
     };
     setState(prev => ({ ...prev, clients: [...prev.clients, newClient] }));
   }, []);
@@ -117,7 +117,6 @@ const App: React.FC = () => {
     setShowGoalModal(false);
   }, [currentMonth, currentYear]);
 
-  // Data Management Functions
   const exportData = () => {
     const dataStr = JSON.stringify(state, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
@@ -159,76 +158,46 @@ const App: React.FC = () => {
   if (!isLoaded) {
     return (
       <div className="fixed inset-0 bg-indigo-600 flex flex-col items-center justify-center text-white p-6 text-center">
-        <div className="w-24 h-24 bg-white/20 rounded-[2rem] flex items-center justify-center mb-6 animate-bounce">
+        <div className="w-24 h-24 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mb-6 animate-bounce">
            <i className="fas fa-coins text-5xl"></i>
         </div>
-        <h1 className="text-4xl font-black mb-2 tracking-tight">حصيلة</h1>
-        <p className="text-indigo-200 text-sm font-bold mb-8">يتم تحميل بياناتك المخزنة محلياً...</p>
-        <div className="w-16 h-1.5 bg-white/20 rounded-full overflow-hidden">
-          <div className="h-full bg-white w-1/2 animate-[loading_1.5s_infinite]"></div>
-        </div>
-        <style>{`@keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }`}</style>
+        <h1 className="text-4xl font-bold mb-2">حصيلة</h1>
+        <p className="text-indigo-200 text-sm font-bold mb-8">يتم تحميل بياناتك...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 safe-top safe-bottom">
-      {/* Top Header */}
-      <header className="sticky top-0 z-30 bg-slate-50/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-100">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col min-h-screen bg-gray-50 safe-top safe-bottom">
+      <header className="sticky top-0 z-30 bg-gray-50 bg-opacity-80 backdrop-filter backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-gray-100">
+        <div className="flex items-center space-x-2 space-x-reverse">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs">
             <i className="fas fa-coins"></i>
           </div>
-          <span className="font-black text-slate-800 tracking-tight text-xl">حصيلة</span>
+          <span className="font-extrabold text-gray-800 text-xl">حصيلة</span>
         </div>
-        <div className="flex items-center gap-2">
-            <div className="hidden xs:flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full text-[9px] font-bold">
-               <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></div>
-               محفوظ داخلياً
-            </div>
-            <button 
-              onClick={() => setShowSettings(true)}
-              className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-50 flex items-center justify-center text-slate-400 btn-active"
-            >
-              <i className="fas fa-cog"></i>
-            </button>
-        </div>
+        <button 
+          onClick={() => setShowSettings(true)}
+          className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-50 flex items-center justify-center text-gray-400 btn-active"
+        >
+          <i className="fas fa-cog"></i>
+        </button>
       </header>
 
-      {/* Main Container */}
       <main className="flex-1 pb-32">
         <div className="max-w-md mx-auto px-5 pt-6">
-          {activeTab === 'dashboard' && (
-            <Dashboard 
-              state={state} 
-              onClientClick={setSelectedClientId}
-              onSetGoalClick={() => setShowGoalModal(true)}
-            />
-          )}
-          {activeTab === 'clients' && (
-            <ClientList 
-              clients={state.clients} 
-              onAddClient={addClient}
-              onClientClick={setSelectedClientId}
-              onDeleteClient={deleteClient}
-            />
-          )}
-          {activeTab === 'history' && (
-            <History state={state} />
-          )}
-          {activeTab === 'reports' && (
-            <Reports state={state} />
-          )}
+          {activeTab === 'dashboard' && <Dashboard state={state} onClientClick={setSelectedClientId} onSetGoalClick={() => setShowGoalModal(true)} />}
+          {activeTab === 'clients' && <ClientList clients={state.clients} onAddClient={addClient} onClientClick={setSelectedClientId} onDeleteClient={deleteClient} />}
+          {activeTab === 'history' && <History state={state} />}
+          {activeTab === 'reports' && <Reports state={state} />}
         </div>
       </main>
 
-      {/* Mobile Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-slate-100 px-6 pb-safe flex justify-between items-center h-20 z-40">
+      <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-100 px-6 pb-safe flex justify-between items-center h-20 z-40">
         <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon="fa-home" label="الرئيسية" />
         <TabButton active={activeTab === 'clients'} onClick={() => setActiveTab('clients')} icon="fa-users" label="العملاء" />
         <div className="relative -top-6">
-          <button onClick={() => setActiveTab('clients')} className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 flex items-center justify-center text-white btn-active">
+          <button onClick={() => setActiveTab('clients')} className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl flex items-center justify-center text-white btn-active">
             <i className="fas fa-plus text-xl"></i>
           </button>
         </div>
@@ -236,107 +205,43 @@ const App: React.FC = () => {
         <TabButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon="fa-chart-line" label="تقارير" />
       </nav>
 
-      {/* Settings / Data Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 shadow-2xl animate-in slide-in-from-bottom-10 duration-500">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-8 shadow-2xl">
              <div className="flex justify-between items-start mb-8">
-                <button onClick={() => setShowSettings(false)} className="text-slate-400 p-2"><i className="fas fa-times"></i></button>
-                <h2 className="text-xl font-black text-slate-800">إدارة البيانات</h2>
+                <button onClick={() => setShowSettings(false)} className="text-gray-400 p-2"><i className="fas fa-times"></i></button>
+                <h2 className="text-xl font-bold text-gray-800">إدارة البيانات</h2>
              </div>
-
              <div className="space-y-6">
-                <section>
-                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">التخزين الداخلي</h3>
-                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center">
-                            <i className="fas fa-database"></i>
-                         </div>
-                         <div>
-                            <p className="text-sm font-bold text-slate-700">حالة التخزين</p>
-                            <p className="text-[10px] text-emerald-500 font-bold">نشط ومؤمن محلياً</p>
-                         </div>
-                      </div>
-                      <div className="text-left">
-                         <p className="text-[10px] text-slate-400 font-bold uppercase">آخر مزامنة</p>
-                         <p className="text-[10px] text-slate-600 font-bold">{lastSaved?.toLocaleTimeString('ar-EG')}</p>
-                      </div>
-                   </div>
-                </section>
-
-                <section className="grid grid-cols-1 gap-3">
-                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">النسخ الاحتياطي</h3>
-                   <button 
-                    onClick={exportData}
-                    className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all btn-active"
-                   >
-                      <div className="flex items-center gap-3">
+                <button onClick={exportData} className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl btn-active">
+                    <div className="flex items-center space-x-3 space-x-reverse">
                         <i className="fas fa-download text-indigo-500"></i>
-                        <span className="text-sm font-bold text-slate-700">تصدير بيانات "حصيلة"</span>
-                      </div>
-                      <i className="fas fa-chevron-left text-[10px] text-slate-300"></i>
-                   </button>
-                   
-                   <label className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all btn-active cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <i className="fas fa-upload text-amber-500"></i>
-                        <span className="text-sm font-bold text-slate-700">استيراد نسخة سابقة</span>
-                      </div>
-                      <input type="file" accept=".json" onChange={importData} className="hidden" />
-                      <i className="fas fa-chevron-left text-[10px] text-slate-300"></i>
-                   </label>
-                </section>
-
-                <button 
-                  onClick={() => {
-                    if(confirm('سيتم حذف كل البيانات وإعادة تشغيل التطبيق. هل أنت متأكد؟')) {
-                      localStorage.clear();
-                      window.location.reload();
-                    }
-                  }}
-                  className="w-full py-4 text-rose-500 text-sm font-bold hover:bg-rose-50 rounded-2xl transition-all"
-                >
-                  مسح كافة البيانات نهائياً
+                        <span className="text-sm font-bold text-gray-700">تصدير النسخة الاحتياطية</span>
+                    </div>
                 </button>
+                <label className="w-full flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl btn-active cursor-pointer">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                        <i className="fas fa-upload text-yellow-500"></i>
+                        <span className="text-sm font-bold text-gray-700">استيراد بيانات</span>
+                    </div>
+                    <input type="file" accept=".json" onChange={importData} className="hidden" />
+                </label>
+                <button onClick={() => { if(confirm('حذف كل البيانات؟')) { localStorage.clear(); window.location.reload(); } }} className="w-full py-4 text-red-500 text-sm font-bold">مسح شامل</button>
              </div>
           </div>
         </div>
       )}
 
-      {/* Modals */}
-      {showGoalModal && (
-        <GoalModal 
-          currentGoal={currentGoal?.targetAmount || 0}
-          onSave={setGoal}
-          onClose={() => currentGoal && setShowGoalModal(false)}
-          isFirstGoal={!currentGoal}
-        />
-      )}
-
-      {selectedClient && (
-        <ClientDetailModal 
-          client={selectedClient}
-          onClose={() => setSelectedClientId(null)}
-          onAddTask={(task) => addTask(selectedClient.id, task)}
-          onToggleTask={(taskId) => toggleTask(selectedClient.id, taskId)}
-          currency={state.currency}
-        />
-      )}
+      {showGoalModal && <GoalModal currentGoal={currentGoal?.targetAmount || 0} onSave={setGoal} onClose={() => setShowGoalModal(false)} isFirstGoal={!currentGoal} />}
+      {selectedClient && <ClientDetailModal client={selectedClient} onClose={() => setSelectedClientId(null)} onAddTask={(task) => addTask(selectedClient.id, task)} onToggleTask={(taskId) => toggleTask(selectedClient.id, taskId)} currency={state.currency} />}
     </div>
   );
 };
 
 const TabButton: React.FC<{ active: boolean, onClick: () => void, icon: string, label: string }> = ({ active, onClick, icon, label }) => (
-  <button 
-    onClick={onClick}
-    className={`flex flex-col items-center gap-1 transition-all duration-300 btn-active ${
-      active ? 'text-indigo-600 scale-110' : 'text-slate-400 hover:text-slate-600'
-    }`}
-  >
+  <button onClick={onClick} className={`flex flex-col items-center space-y-1 transition-all btn-active ${active ? 'text-indigo-600' : 'text-gray-400'}`}>
     <i className={`fas ${icon} text-lg`}></i>
     <span className="text-[10px] font-bold">{label}</span>
-    {active && <div className="w-1 h-1 bg-indigo-600 rounded-full"></div>}
   </button>
 );
 

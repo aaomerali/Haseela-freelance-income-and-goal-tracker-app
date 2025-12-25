@@ -1,4 +1,4 @@
-
+**Haseela:** A dedicated freelance income and goal tracker designed to manage clients, track task earnings, and monitor monthly financial targets.
 
 ## Run Locally
 

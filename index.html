@@ -11,8 +11,8 @@
     
     <title>حصيلة - تتبع أرباحك</title>
     
-    <!-- استخدام نسخة ثابتة من Tailwind لا تعتمد على eval() لتجنب أخطاء CSP -->
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <!-- استخدام نسخة CSS ثابتة لا تتطلب JavaScript (متوافقة مع CSP) -->
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
@@ -25,7 +25,7 @@
         }
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: #f9fafb; /* gray-50 equivalent */
+            background-color: #f9fafb; /* gray-50 */
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: contain;
@@ -48,10 +48,20 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
-
-        /* إصلاح لبعض الخصائص التي تختلف بين Tailwind 2 و 3 */
+        
+        /* دعم الحواف الكبيرة في Tailwind v2 */
         .rounded-2xl { border-radius: 1rem; }
         .rounded-3xl { border-radius: 1.5rem; }
+        .rounded-4xl { border-radius: 2rem; }
+        
+        /* Animation Utility */
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script type="importmap">
     {

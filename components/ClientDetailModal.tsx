@@ -7,10 +7,11 @@ interface ClientDetailModalProps {
   onClose: () => void;
   onAddTask: (task: Omit<Task, 'id' | 'createdAt' | 'isCompleted'>) => void;
   onToggleTask: (taskId: string) => void;
+  onDeleteTask: (taskId: string) => void;
   currency: string;
 }
 
-const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, onAddTask, onToggleTask, currency }) => {
+const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, onAddTask, onToggleTask, onDeleteTask, currency }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskPrice, setTaskPrice] = useState('');
 
@@ -31,12 +32,12 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, 
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-50 w-full max-w-2xl max-h-screen overflow-hidden rounded-3xl shadow-2xl flex flex-col animate-fade-in">
+      <div className="bg-gray-50 w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col animate-fade-in">
         {/* Header */}
-        <div className={`${client.color} p-8 text-white relative`}>
+        <div className={`${client.color} p-8 text-white relative flex-shrink-0`}>
           <button 
             onClick={onClose}
-            className="absolute left-6 top-6 w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+            className="absolute left-6 top-6 w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all btn-active"
           >
             <i className="fas fa-times"></i>
           </button>
@@ -53,7 +54,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, 
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
           {/* Add Task Form */}
           <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -74,7 +75,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, 
                     placeholder="السعر"
                     value={taskPrice}
                     onChange={(e) => setTaskPrice(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-right"
+                    className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-right font-bold"
                   />
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">$</span>
               </div>
@@ -88,7 +89,7 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, 
           </section>
 
           {/* Tasks List */}
-          <section>
+          <section className="pb-4">
              <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="font-bold text-gray-800">قائمة المهام ({client.tasks.length})</h3>
                 <span className="text-xs font-bold text-gray-400">{completedCount} مكتملة</span>
@@ -104,27 +105,36 @@ const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose, 
                  {[...client.tasks].reverse().map(task => (
                    <div 
                     key={task.id} 
-                    className={`bg-white p-4 rounded-2xl border flex items-center justify-between transition-all ${task.isCompleted ? 'border-green-100 bg-green-50 bg-opacity-30' : 'border-gray-100'}`}
+                    className={`bg-white p-4 rounded-2xl border flex items-center justify-between transition-all group ${task.isCompleted ? 'border-green-100 bg-green-50 bg-opacity-30' : 'border-gray-100 shadow-sm'}`}
                    >
                      <div className="flex items-center gap-4">
                         <button 
                           onClick={() => onToggleTask(task.id)}
-                          className={`w-6 h-6 rounded flex items-center justify-center transition-all ${task.isCompleted ? 'bg-green-500 text-white border-green-500' : 'border-2 border-gray-200'}`}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${task.isCompleted ? 'bg-green-500 text-white border-green-500' : 'border-2 border-gray-200 bg-white hover:border-indigo-300'}`}
                         >
                           {task.isCompleted && <i className="fas fa-check text-xs"></i>}
                         </button>
                         <div>
-                          <p className={`font-bold transition-all ${task.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                          <p className={`font-bold transition-all text-sm md:text-base ${task.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                             {task.title}
                           </p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(task.createdAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          <p className="text-[10px] text-gray-400 font-medium">
+                            {new Date(task.createdAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
                           </p>
                         </div>
                      </div>
-                     <span className={`font-black ${task.isCompleted ? 'text-green-600' : 'text-gray-900'}`}>
-                       {currency}{task.price.toLocaleString()}
-                     </span>
+                     <div className="flex items-center gap-4">
+                        <span className={`font-black text-sm md:text-base ${task.isCompleted ? 'text-green-600' : 'text-gray-900'}`}>
+                          {currency}{task.price.toLocaleString()}
+                        </span>
+                        <button 
+                          onClick={() => onDeleteTask(task.id)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-gray-200 hover:text-red-500 hover:bg-red-50 transition-all btn-active"
+                          title="حذف المهمة"
+                        >
+                          <i className="fas fa-trash-alt text-xs"></i>
+                        </button>
+                     </div>
                    </div>
                  ))}
                </div>

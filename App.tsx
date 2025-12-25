@@ -8,7 +8,6 @@ import Reports from './components/Reports';
 import GoalModal from './components/GoalModal';
 import ClientDetailModal from './components/ClientDetailModal';
 
-// دالة توليد معرفات آمنة ولا تستخدم eval
 const generateId = () => Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 
 const App: React.FC = () => {
@@ -37,7 +36,7 @@ const App: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 1000);
+    const timer = setTimeout(() => setIsLoaded(true), 800);
     return () => clearTimeout(timer);
   }, []);
 

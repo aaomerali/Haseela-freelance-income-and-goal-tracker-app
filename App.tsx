@@ -233,7 +233,7 @@ const App: React.FC = () => {
   }
 
   if (!session) {
-    return <Auth language={state.language || 'ar'} />;
+    return <Auth language={state.language || 'ar'} onToggleLanguage={toggleLanguage} />;
   }
 
   const selectedClient = state.clients.find(c => c.id === selectedClientId);
@@ -265,15 +265,15 @@ const App: React.FC = () => {
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t border-gray-100 px-6 pb-safe flex justify-between items-center h-20 z-40">
-        <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard'} icon="fa-home" label={t.dashboard} />
-        <TabButton active={activeTab === 'clients'} onClick={() => setActiveTab('clients'} icon="fa-users" label={t.clients} />
+        <TabButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon="fa-home" label={t.dashboard} />
+        <TabButton active={activeTab === 'clients'} onClick={() => setActiveTab('clients')} icon="fa-users" label={t.clients} />
         <div className="relative -top-6">
           <button onClick={() => { setActiveTab('clients'); setSelectedClientId(null); }} className="w-14 h-14 bg-indigo-600 rounded-2xl shadow-xl flex items-center justify-center text-white btn-active">
             <i className="fas fa-plus text-xl"></i>
           </button>
         </div>
-        <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history'} icon="fa-calendar-alt" label={t.history} />
-        <TabButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports'} icon="fa-chart-line" label={t.reports} />
+        <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon="fa-calendar-alt" label={t.history} />
+        <TabButton active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} icon="fa-chart-line" label={t.reports} />
       </nav>
 
       {showSettings && (

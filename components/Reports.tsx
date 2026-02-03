@@ -1,15 +1,14 @@
 
 import React, { useMemo } from 'react';
 import { AppState } from '../types';
-import { MONTH_NAMES_AR } from '../constants';
+import { TRANSLATIONS } from '../constants';
 
 interface ReportsProps {
   state: AppState;
 }
 
 const Reports: React.FC<ReportsProps> = ({ state }) => {
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  const t = TRANSLATIONS[state.language];
 
   const totalIncomeAllTime = useMemo(() => {
     let total = 0;
@@ -53,32 +52,32 @@ const Reports: React.FC<ReportsProps> = ({ state }) => {
           }
         });
       });
-      months.push({ label: MONTH_NAMES_AR[m - 1], earned });
+      months.push({ label: t.months[m - 1], earned });
     }
     return months;
-  }, [state.clients]);
+  }, [state.clients, t]);
 
   const maxEarned = Math.max(...monthlyData.map(m => m.earned), 1);
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-gray-900">تقارير الأداء 📈</h2>
+        <h2 className="text-2xl font-black text-gray-900">{t.performanceReports} 📈</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-center">
-          <p className="text-gray-400 text-xs font-bold uppercase mb-1">إجمالي الدخل</p>
+          <p className="text-gray-400 text-xs font-bold uppercase mb-1">{t.totalIncome}</p>
           <p className="text-2xl font-black text-indigo-600">{state.currency}{totalIncomeAllTime.toLocaleString()}</p>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-center">
-          <p className="text-gray-400 text-xs font-bold uppercase mb-1">متوسط شهري</p>
+          <p className="text-gray-400 text-xs font-bold uppercase mb-1">{t.monthlyAvg}</p>
           <p className="text-2xl font-black text-green-500">{state.currency}{Math.round(avgMonthly).toLocaleString()}</p>
         </div>
       </div>
 
       <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-        <h3 className="text-lg font-black text-gray-800 mb-8">آخر 6 أشهر</h3>
+        <h3 className="text-lg font-black text-gray-800 mb-8">{t.last6Months}</h3>
         <div className="flex items-end justify-between h-40 gap-2">
           {monthlyData.map((data, idx) => (
             <div key={idx} className="flex-1 flex flex-col items-center group">
@@ -88,16 +87,16 @@ const Reports: React.FC<ReportsProps> = ({ state }) => {
                   style={{ height: `${(data.earned / maxEarned) * 100}%`, minHeight: '4px' }}
                 ></div>
               </div>
-              <span className="text-xs font-bold text-gray-400 mt-3">{data.label}</span>
+              <span className="text-[10px] font-bold text-gray-400 mt-3">{data.label}</span>
             </div>
           ))}
         </div>
       </section>
 
       <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-        <h3 className="text-lg font-black text-gray-800 mb-6 text-right">توزيع الدخل</h3>
+        <h3 className="text-lg font-black text-gray-800 mb-6">{t.incomeDistribution}</h3>
         {clientDistribution.length === 0 ? (
-          <p className="text-center py-6 text-gray-400 text-sm">لا توجد بيانات كافية</p>
+          <p className="text-center py-6 text-gray-400 text-sm">...</p>
         ) : (
           <div className="space-y-4">
             {clientDistribution.map((client, idx) => (
@@ -123,13 +122,15 @@ const Reports: React.FC<ReportsProps> = ({ state }) => {
       <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100">
         <div className="flex items-center gap-3 mb-2">
           <i className="fas fa-magic text-indigo-500"></i>
-          <h4 className="font-black text-indigo-900 text-sm">تحليلات ذكية</h4>
+          <h4 className="font-black text-indigo-900 text-sm">{t.smartAnalysis}</h4>
         </div>
-        <p className="text-indigo-700 text-xs leading-relaxed text-right">
+        <p className="text-indigo-700 text-xs leading-relaxed">
           {clientDistribution.length > 0 ? (
-            `العميل "${clientDistribution[0].name}" هو المصدر الأساسي لدخلك حالياً، يمثل ${Math.round((clientDistribution[0].earned / totalIncomeAllTime) * 100)}% من إجمالي أرباحك.`
+             state.language === 'ar' 
+             ? `العميل "${clientDistribution[0].name}" هو المصدر الأساسي لدخلك حالياً، يمثل ${Math.round((clientDistribution[0].earned / totalIncomeAllTime) * 100)}% من إجمالي أرباحك.`
+             : `Client "${clientDistribution[0].name}" is currently your primary source of income, representing ${Math.round((clientDistribution[0].earned / totalIncomeAllTime) * 100)}% of your total earnings.`
           ) : (
-            "ابدأ بإنهاء بعض المهام للحصول على تحليلات مخصصة لأدائك المالي."
+            "..."
           )}
         </p>
       </div>

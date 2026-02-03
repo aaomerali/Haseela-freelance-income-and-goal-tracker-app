@@ -1,15 +1,18 @@
 
 import React, { useState } from 'react';
+import { TRANSLATIONS } from '../constants';
 
 interface GoalModalProps {
   currentGoal: number;
   onSave: (amount: number) => void;
   onClose: () => void;
   isFirstGoal: boolean;
+  language: 'ar' | 'en';
 }
 
-const GoalModal: React.FC<GoalModalProps> = ({ currentGoal, onSave, onClose, isFirstGoal }) => {
+const GoalModal: React.FC<GoalModalProps> = ({ currentGoal, onSave, onClose, isFirstGoal, language }) => {
   const [amount, setAmount] = useState(currentGoal > 0 ? currentGoal.toString() : '');
+  const t = TRANSLATIONS[language];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,20 +30,20 @@ const GoalModal: React.FC<GoalModalProps> = ({ currentGoal, onSave, onClose, isF
             <i className="fas fa-bullseye text-indigo-600 text-3xl"></i>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">
-            {isFirstGoal ? 'حدد هدفك المالي لهذا الشهر' : 'تعديل الهدف المالي'}
+            {isFirstGoal ? t.setGoalTitle : t.editGoalTitle}
           </h2>
-          <p className="text-gray-500 mt-2">كم تريد أن تجني في هذا الشهر؟</p>
+          <p className="text-gray-500 mt-2">{t.goalPlaceholder}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
-            <span className="absolute left-6 top-1/2 transform -translate-y-1/2 text-2xl font-bold text-gray-300">$</span>
+            <span className={`absolute ${language === 'ar' ? 'left-6' : 'right-6'} top-1/2 transform -translate-y-1/2 text-2xl font-bold text-gray-300`}>$</span>
             <input 
               autoFocus
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full pl-12 pr-6 py-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white text-3xl font-bold text-center transition-all outline-none"
+              className="w-full px-12 py-5 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white text-3xl font-bold text-center transition-all outline-none"
               placeholder="0.00"
             />
           </div>
@@ -52,14 +55,14 @@ const GoalModal: React.FC<GoalModalProps> = ({ currentGoal, onSave, onClose, isF
                 onClick={onClose}
                 className="flex-1 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all"
               >
-                إلغاء
+                {t.cancel}
               </button>
             )}
             <button 
               type="submit"
               className="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg"
             >
-              {isFirstGoal ? 'بدء التتبع' : 'حفظ التغييرات'}
+              {isFirstGoal ? t.startTracking : t.saveChanges}
             </button>
           </div>
         </form>

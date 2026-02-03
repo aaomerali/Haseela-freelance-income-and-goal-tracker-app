@@ -25,4 +25,5 @@ export interface AppState {
   clients: Client[];
   goals: MonthlyGoal[];
   currency: string;
+  language: 'ar' | 'en';
 }

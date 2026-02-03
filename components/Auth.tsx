@@ -1,13 +1,19 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { TRANSLATIONS } from '../constants';
 
-const Auth: React.FC = () => {
+interface AuthProps {
+  language: 'ar' | 'en';
+}
+
+const Auth: React.FC<AuthProps> = ({ language }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [message, setMessage] = useState('');
+  const t = TRANSLATIONS[language];
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +24,13 @@ const Auth: React.FC = () => {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage('تم إرسال بريد تأكيد، يرجى التحقق من بريدك.');
+        setMessage(language === 'ar' ? 'تم إرسال بريد تأكيد، يرجى التحقق من بريدك.' : 'Confirmation email sent, please check your inbox.');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (error: any) {
-      setMessage(error.message || 'حدث خطأ ما');
+      setMessage(error.message || (language === 'ar' ? 'حدث خطأ ما' : 'An error occurred'));
     } finally {
       setLoading(false);
     }
@@ -37,16 +43,16 @@ const Auth: React.FC = () => {
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg">
             <i className="fas fa-coins"></i>
           </div>
-          <h1 className="text-3xl font-black text-gray-900">حصيلة</h1>
-          <p className="text-gray-400 font-bold mt-2">نظم أرباحك في سحابة آمنة</p>
+          <h1 className="text-3xl font-black text-gray-900">{t.appName}</h1>
+          <p className="text-gray-400 font-bold mt-2 text-center">{t.appTagline}</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2 mr-1">البريد الإلكتروني</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-2 mr-1">{language === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
             <input 
               type="email" 
-              className="w-full px-5 py-4 bg-gray-50 border border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all text-right"
+              className="w-full px-5 py-4 bg-gray-50 border border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all"
               placeholder="example@mail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -54,10 +60,10 @@ const Auth: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2 mr-1">كلمة المرور</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase mb-2 mr-1">{language === 'ar' ? 'كلمة المرور' : 'Password'}</label>
             <input 
               type="password" 
-              className="w-full px-5 py-4 bg-gray-50 border border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all text-right"
+              className="w-full px-5 py-4 bg-gray-50 border border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -70,12 +76,12 @@ const Auth: React.FC = () => {
             disabled={loading}
             className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition-all btn-active disabled:opacity-50"
           >
-            {loading ? 'جاري التحميل...' : (isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول')}
+            {loading ? '...' : (isSignUp ? (language === 'ar' ? 'إنشاء حساب جديد' : 'Sign Up') : (language === 'ar' ? 'تسجيل الدخول' : 'Sign In'))}
           </button>
         </form>
 
         {message && (
-          <div className={`mt-6 p-4 rounded-xl text-center text-sm font-bold ${message.includes('خطأ') ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
+          <div className={`mt-6 p-4 rounded-xl text-center text-sm font-bold ${message.includes('error') || message.includes('خطأ') ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'}`}>
             {message}
           </div>
         )}
@@ -85,7 +91,9 @@ const Auth: React.FC = () => {
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-indigo-600 font-bold text-sm hover:underline"
           >
-            {isSignUp ? 'لديك حساب بالفعل؟ سجل دخولك' : 'ليس لديك حساب؟ اشترك الآن'}
+            {isSignUp 
+              ? (language === 'ar' ? 'لديك حساب بالفعل؟ سجل دخولك' : 'Already have an account? Sign in') 
+              : (language === 'ar' ? 'ليس لديك حساب؟ اشترك الآن' : 'No account yet? Sign up')}
           </button>
         </div>
       </div>

@@ -1,10 +1,9 @@
 
 
-# Run and deploy your AI Studio app
+# Haseela App
 
-This contains everything you need to run your app locally.
+Haseela: A dedicated freelance income and goal tracker designed to manage clients, track task earnings, and monitor monthly financial targets.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1wa4QtKrJ3w0QnPaQHuLGQFLBdaqt6T8g
 
 ## Run Locally
 
